@@ -1,0 +1,41 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'org.cloudfoundry', name: 'cf-gradle-plugin', version: '1.0.2'
+    }
+}
+
+apply plugin: 'cloudfoundry'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}
+
+defaultTasks 'cf-push'
+
+cloudfoundry {
+    target = 'https://api.run.pivotal.io'
+    space = 'production'
+    buildpack = 'https://github.com/cloudfoundry/java-buildpack'
+    username = cfusername
+    password = cfpassword
+    application = "tradepr"
+    file = file("server-0.7.14.war")
+    uris = ['http://tradepr.cfapps.io', 'http://tradepr.webninjapr.com']
+    memory = 1280
+    instances = 1   
+    env = [
+	"JAVA_OPTS": " -Duser.timezone=GMT-4:00",
+	"JDBC_CONNECTION_STRING": tradeprMysqlStringG
+    ]
+    serviceInfos {
+    	'newrelic-prod' {
+		label = 'newrelic'
+		plan = 'standard'
+		bind = true
+	}
+    }
+}
+
